@@ -71,7 +71,7 @@
     @apply bg-background text-foreground;
   }
 
-  .auth-card::after{
+  .auth-card::after {
     content: "";
     background-image: url("/assets/green-leaf.png");
     background-size: cover;
@@ -83,7 +83,7 @@
     filter: blur(20px);
     opacity: 10%;
   }
-  
+
   .auth-card {
     position: relative;
     overflow: hidden;

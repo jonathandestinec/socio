@@ -14,7 +14,7 @@ const page = async () => {
     const session = await getSession()
     let user = session?.user && session.user as Auth0User;
 
-    if (!session?.user || !session || !user) {
+    if (!session || !user) {
         redirect("/auth")
     }
 
@@ -22,23 +22,24 @@ const page = async () => {
 
         const response: UserExistsResponse = await findUser(user.email)
 
-        const error = true
-
-        console.log(response)
-
         // Now check if the use is in our DB, meaning that have provided us with the other necessary information
 
-        if (response.code === "user_found") {
+        if (response.code === "user_found" && response.user != undefined) {
 
-            // Good. We have this user. Display their info
-            return (
-                <div>
+            const currentUser = await findUser(user.email)
 
-                    <Feeds user={user} session={session} />
+            if (currentUser.user) {
 
-                </div>
-            )
-        } else if (response.code === "error") {
+                // Good. We have this user. Display their info
+                return (
+                    <div>
+
+                        <Feeds user={user} session={session} />
+
+                    </div>
+                )
+            }
+        } else if (response && response.code === "error") {
             return (
                 <div className={`${ubuntu_mono.className} flex items-center justify-center`}>
                     <div>

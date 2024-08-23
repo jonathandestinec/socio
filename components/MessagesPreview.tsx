@@ -1,6 +1,6 @@
 import React from 'react'
 
-const MessagesPreview = () => {
+const MessagesPreview = ({ user, session }: Auth0Params) => {
     return (
         <div>
             

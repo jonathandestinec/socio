@@ -9,39 +9,36 @@ const prisma = new PrismaClient().$extends(withAccelerate())
 export const POST = withApiAuthRequired(
     async (request: NextRequest) => {
 
+        // Adding Route Security
         const session = await getSession();
 
         if (!session || !session.user) {
             return NextResponse.json({ error: 'Unauthorized' });
         }
 
-        const username = request.nextUrl.searchParams.get("username")
-        const email = request.nextUrl.searchParams.get("email")
-        const fullname = request.nextUrl.searchParams.get("fullname")
-        const picture = request.nextUrl.searchParams.get("picture")
+        const userId = request.nextUrl.searchParams.get("userId")
+        const toFollowId = request.nextUrl.searchParams.get("toFollowId")
 
         try {
 
-            if (username && picture && email && fullname) {
+            if (userId && toFollowId) {
 
-                const user = await prisma.user.create({
+                const newFollow = await prisma.following.create({
                     data: {
-                        username: username,
-                        email: email,
-                        fullname: fullname,
-                        picture: picture
+                        followingId: toFollowId,
+                        userId: userId
                     }
                 })
 
                 return NextResponse.json({
-                    message: "User created successfully",
+                    message: "Followed this user successfully",
                     code: "success",
-                    user
+                    newFollow
                 })
 
             } else {
                 return NextResponse.json({
-                    message: "Missing required parameters: username, picture, email, fullname",
+                    message: "Missing required parameters",
                     code: "missing_params"
                 })
             }
@@ -56,7 +53,10 @@ export const POST = withApiAuthRequired(
             await prisma.$disconnect()
         }
 
-    })
+    }
+)
+
+
 
 export const GET = withApiAuthRequired(
     async (request: NextRequest) => {
@@ -67,35 +67,28 @@ export const GET = withApiAuthRequired(
             return NextResponse.json({ error: 'Unauthorized' });
         }
 
-        const email = request.nextUrl.searchParams.get("email")
+        const userId = request.nextUrl.searchParams.get("userId")
 
         try {
 
-            if (email) {
-                const user = await prisma.user.findUnique({
+            if (userId) {
+
+
+                const userFollowings = await prisma.following.findMany({
                     where: {
-                        email: email
+                        userId: userId
                     }
                 })
 
-                if (user) {
-                    return NextResponse.json({
-                        message: "User found",
-                        code: "user_found",
-                        user
-                    })
-                }
-
-                else {
-                    return NextResponse.json({
-                        message: "User not found",
-                        code: "user_not_found"
-                    })
-                }
+                return NextResponse.json({
+                    message: "Here are the users you are following",
+                    code: "success",
+                    userFollowings
+                })
 
             } else {
                 return NextResponse.json({
-                    message: "Missing required parameter: email",
+                    message: "Missing required parameters",
                     code: "missing_params"
                 })
             }
@@ -106,6 +99,9 @@ export const GET = withApiAuthRequired(
                 code: "error",
                 error
             })
+        } finally {
+            await prisma.$disconnect()
         }
+
     }
 )
